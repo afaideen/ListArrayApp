@@ -113,6 +113,51 @@ void removeFromList(List* list, size_t index) {
     list->persons = temp;
 }
 
+void removeFromListByObject(List* list, Person* personToRemove) {
+    // Search for the person to remove
+    size_t indexToRemove = SIZE_MAX;
+    for (size_t i = 0; i < list->size; ++i) {
+        if (list->persons[i] == personToRemove) {
+            indexToRemove = i;
+            break;
+        }
+    }
+
+    // If person not found in the list, return
+    if (indexToRemove == SIZE_MAX) {
+        fprintf(stderr, "Person not found in the list\n");
+        return;
+    }
+
+    // Free memory for personToRemove and its fields
+    delete[] list->persons[indexToRemove]->firstname;
+    delete[] list->persons[indexToRemove]->lastname;
+    delete list->persons[indexToRemove];
+
+    // Reset list->persons[indexToRemove] to nullptr
+    list->persons[indexToRemove] = nullptr;
+
+    // Shift remaining elements to fill the gap
+    for (size_t i = indexToRemove; i < list->size - 1; ++i) {
+        list->persons[i] = list->persons[i + 1];
+    }
+
+    // Decrement the size of the list
+    --list->size;
+
+    // Reallocate memory for list->persons
+    Person** temp = new Person * [list->size];
+    if (temp == nullptr && list->size > 0) {
+        fprintf(stderr, "Failed to reallocate memory for persons array\n");
+        exit(EXIT_FAILURE);
+    }
+    for (size_t i = 0; i < list->size; ++i) {
+        temp[i] = list->persons[i];
+    }
+    delete[] list->persons;
+    list->persons = temp;
+}
+
 
 
 
@@ -140,15 +185,16 @@ int main() {
 
     // Create the list and populate it with person objects
     struct List* mylist = createList(3);
-    mylist->persons[0] = createPerson(25, 'm', "John", "Doe");
-    mylist->persons[1] = createPerson(30, 'f', "Jane", "Smith");
+    mylist->persons[0] = createPerson(30, 'f', "Jane", "Smith");
+    mylist->persons[1] = createPerson(25, 'm', "John", "Doe");
     mylist->persons[2] = createPerson(40, 'm', "Michael", "Johnson");
 
     printf("Before removing:\n");
     printList(mylist);
 
     // Remove person1 from the list
-    removeFromList(mylist, 0);
+    //removeFromList(mylist, 0);
+    removeFromListByObject(mylist, mylist->persons[1]);
 
     printf("\nAfter removing:\n");
     printList(mylist);
